@@ -2,16 +2,12 @@ package com.axon.alex.axonsoft.api;
 
 import android.util.Log;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
-import com.google.gson.Gson;
+import com.axon.alex.axonsoft.api.models.ResponseObj;
+import com.axon.alex.axonsoft.api.models.User;
 import com.google.gson.GsonBuilder;
 import com.ihsanbal.logging.Level;
 import com.ihsanbal.logging.LoggingInterceptor;
 
-import io.mova.kucherenko.gettyimages.App;
-import io.mova.kucherenko.gettyimages.R;
-import io.mova.kucherenko.gettyimages.models.response.Images;
 import io.reactivex.Flowable;
 import io.reactivex.android.BuildConfig;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -22,20 +18,19 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class ImageAPI {
+public class UserAPI {
 
-    private static ImageService imageService;
-    private static ImageAPI imageAPI;
+    private static UserService userService;
+    private static UserAPI userAPI;
     //    private static final String host = App.getInstance().getMResources().getString(R.string.host);
-    public static final String api_key = App.getInstance().getMResources().getString(R.string.api_key);
-    private static final String host = "https://pixabay.com/api/?key=" + api_key;
+    private static final String host = "https://randomuser.me/api/";
 
-    public synchronized static ImageAPI getInstance() {
-        if (imageAPI == null) imageAPI = new ImageAPI();
-        return imageAPI;
+    public synchronized static UserAPI getInstance() {
+        if (userAPI == null) userAPI = new UserAPI();
+        return userAPI;
     }
 
-    private ImageAPI() {
+    private UserAPI() {
         createRetrofit();
     }
 
@@ -46,26 +41,14 @@ public class ImageAPI {
                 .addInterceptor(logInterceptorBuilder())
                 .build();
 
-        Gson gson = new GsonBuilder().setExclusionStrategies(new ExclusionStrategy() {
-            @Override
-            public boolean shouldSkipField(FieldAttributes f) {
-                return f.getDeclaredClass() == Images.class;
-            }
-
-            @Override
-            public boolean shouldSkipClass(Class<?> clazz) {
-                return false;
-            }
-        }).create();
-
         //Retrofit2
         Retrofit retrofitAdapter = new Retrofit.Builder()
-                .addConverterFactory(GsonConverterFactory.create(gson))
+                .addConverterFactory(GsonConverterFactory.create(new GsonBuilder().create()))
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .baseUrl(host)
                 .client(client)
                 .build();
-        imageService = retrofitAdapter.create(ImageService.class);
+        userService = retrofitAdapter.create(UserService.class);
     }
 
     private LoggingInterceptor logInterceptorBuilder() {
@@ -81,14 +64,13 @@ public class ImageAPI {
                 .build();
     }
 
-    public Flowable<Images> getImages(String key_word) {
+    public Flowable<ResponseObj> getUsers(int users_count) {
         String url = host;
-        key_word = key_word.replaceAll(" ", "+");
-        url = url.concat("&q=").concat(key_word).concat("&image_type=photo");
+        url = url.concat("?results=").concat(Integer.toString(users_count));
         Log.e("url", url);
-        return imageService.getImages(url)
+        return userService.getImages(url)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
-    }
+     }
 
 }

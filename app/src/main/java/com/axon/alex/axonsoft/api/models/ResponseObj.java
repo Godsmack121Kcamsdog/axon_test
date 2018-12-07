@@ -1,11 +1,12 @@
 
 package com.axon.alex.axonsoft.api.models;
 
+import java.io.Serializable;
 import java.util.List;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class ResponseObj {
+public class ResponseObj  implements Serializable {
 
     @SerializedName("results")
     @Expose
